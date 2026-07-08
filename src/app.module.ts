@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+import { CommonModule } from './common/common.module';
 import { ProductModule } from './product/product.module';
 
 @Module({
@@ -17,6 +18,7 @@ import { ProductModule } from './product/product.module';
       autoLoadEntities: true,
       synchronize: true,
     }),
+    CommonModule,
     ProductModule,
   ],
   controllers: [],

@@ -1,12 +1,27 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 
-import { CreateProductDto } from './dto/create-product.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
+import { Repository } from 'typeorm';
+
+import { Product } from './entities/product.entity';
+import { CreateProductDto, UpdateProductDto } from './dto';
 
 @Injectable()
 export class ProductService {
-  create(createProductDto: CreateProductDto) {
-    return 'This action adds a new product';
+  private readonly logger = new Logger('ProductService', { timestamp: true });
+
+  constructor(@InjectRepository(Product) private readonly productRepository: Repository<Product>) {}
+
+  async create(createProductDto: CreateProductDto) {
+    try {
+      const product = this.productRepository.create(createProductDto);
+
+      await this.productRepository.save(product);
+
+      return product;
+    } catch (error) {
+      this.handleTypeormError(error);
+    }
   }
 
   findAll() {
@@ -23,5 +38,16 @@ export class ProductService {
 
   remove(id: number) {
     return `This action removes a #${id} product`;
+  }
+
+  private handleTypeormError(error: any): never {
+    if (error.code === '23505') {
+      throw new BadRequestException(error.detail);
+    }
+
+    if (error instanceof HttpException) throw error;
+
+    this.logger.error(error);
+    throw new InternalServerErrorException('Operation could not be completed. Please contact the administrator.');
   }
 }

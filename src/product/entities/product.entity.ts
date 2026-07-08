@@ -1,4 +1,6 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { BeforeInsert, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+
+import { slugify } from 'src/common/utils/slugify.util';
 
 @Entity()
 export class Product {
@@ -14,7 +16,7 @@ export class Product {
   @Column('text', { nullable: true })
   description: string;
 
-  @Column('numeric', { default: 0 })
+  @Column('float', { default: 0 })
   price: number;
 
   @Column('int', { default: 0 })
@@ -25,4 +27,13 @@ export class Product {
 
   @Column('text')
   gender: string;
+
+  @BeforeInsert()
+  validateSlug() {
+    if (!this.slug) {
+      this.slug = this.title;
+    }
+
+    this.slug = slugify(this.slug);
+  }
 }
