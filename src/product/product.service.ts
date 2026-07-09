@@ -1,10 +1,17 @@
-import { BadRequestException, HttpException, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+import {
+  Logger,
+  Injectable,
+  HttpException,
+  NotFoundException,
+  BadRequestException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { Repository } from 'typeorm';
 
 import { Product } from './entities/product.entity';
-import { CreateProductDto, UpdateProductDto } from './dto';
+import { CreateProductDto, FindAllProductsDto, UpdateProductDto } from './dto';
 
 @Injectable()
 export class ProductService {
@@ -24,20 +31,46 @@ export class ProductService {
     }
   }
 
-  findAll() {
-    return `This action returns all product`;
+  async findAll(findAllProductsDto: FindAllProductsDto) {
+    const { limit = 10, offset = 0 } = findAllProductsDto;
+
+    const products = await this.productRepository.find({
+      take: limit,
+      skip: offset,
+    });
+
+    return products;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} product`;
+  async findOne(id: string) {
+    const product = await this.productRepository.findOneBy({ id });
+
+    if (!product) {
+      throw new NotFoundException(`Product with id '${id}' not found.`);
+    }
+
+    return product;
   }
 
-  update(id: number, updateProductDto: UpdateProductDto) {
+  async update(id: string, updateProductDto: UpdateProductDto) {
     return `This action updates a #${id} product`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} product`;
+  async remove(id: string) {
+    try {
+      const result = await this.productRepository.delete({ id });
+
+      if (result.affected === 0) {
+        throw new NotFoundException(`Product with id '${id}' not found.`);
+      }
+
+      return {
+        ok: true,
+        message: 'Product successfully deleted.',
+      };
+    } catch (error) {
+      this.handleTypeormError(error);
+    }
   }
 
   private handleTypeormError(error: any): never {
