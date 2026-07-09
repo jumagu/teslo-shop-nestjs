@@ -1,6 +1,7 @@
-import { BeforeInsert, BeforeUpdate, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { BeforeInsert, BeforeUpdate, Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 import { slugify } from 'src/common/utils/slugify.util';
+import { ProductImage } from './product-image.entity';
 
 @Entity()
 export class Product {
@@ -14,7 +15,7 @@ export class Product {
   title: string;
 
   @Column('text', { nullable: true })
-  description: string;
+  description: string | null;
 
   @Column('float', { default: 0 })
   price: number;
@@ -30,6 +31,9 @@ export class Product {
 
   @Column('text', { array: true, default: [] })
   tags: string[];
+
+  @OneToMany(() => ProductImage, (productImage) => productImage.product, { cascade: true, eager: true })
+  images: ProductImage[];
 
   @BeforeInsert()
   validateSlugInsert() {
