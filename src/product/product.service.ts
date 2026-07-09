@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
+import { isUUID } from 'class-validator';
 import { Repository } from 'typeorm';
 
 import { Product } from './entities/product.entity';
@@ -42,18 +43,46 @@ export class ProductService {
     return products;
   }
 
-  async findOne(id: string) {
-    const product = await this.productRepository.findOneBy({ id });
+  async findOne(term: string) {
+    // const product = await this.productRepository.findOne({
+    //   where: isUUID(term) ? { id: term } : { slug: term },
+    // });
+
+    let product: Product | null;
+
+    if (isUUID(term)) {
+      product = await this.productRepository.findOneBy({ id: term });
+    } else {
+      const queryBuilder = this.productRepository.createQueryBuilder();
+      product = await queryBuilder
+        .where('LOWER(title)=:title or slug=:slug', { title: term.toLowerCase(), slug: term })
+        .getOne();
+    }
 
     if (!product) {
-      throw new NotFoundException(`Product with id '${id}' not found.`);
+      throw new NotFoundException(`Product with id, name or slug '${term}' not found.`);
     }
 
     return product;
   }
 
   async update(id: string, updateProductDto: UpdateProductDto) {
-    return `This action updates a #${id} product`;
+    try {
+      const updatedProduct = await this.productRepository.preload({
+        id,
+        ...updateProductDto,
+      });
+
+      if (!updatedProduct) {
+        throw new NotFoundException(`Product with id '${id}' not found.`);
+      }
+
+      await this.productRepository.save(updatedProduct);
+
+      return updatedProduct;
+    } catch (error) {
+      this.handleTypeormError(error);
+    }
   }
 
   async remove(id: string) {
@@ -74,6 +103,7 @@ export class ProductService {
   }
 
   private handleTypeormError(error: any): never {
+    // ? Duplicate key error
     if (error.code === '23505') {
       throw new BadRequestException(error.detail);
     }

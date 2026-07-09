@@ -17,9 +17,9 @@ export class ProductController {
     return this.productService.findAll(findAllProductsDto);
   }
 
-  @Get(':id')
-  findOne(@Param('id', ParseUUIDPipe) id: string) {
-    return this.productService.findOne(id);
+  @Get(':term')
+  findOne(@Param('term') term: string) {
+    return this.productService.findOne(term);
   }
 
   @Patch(':id')

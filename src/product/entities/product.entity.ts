@@ -1,4 +1,4 @@
-import { BeforeInsert, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { BeforeInsert, BeforeUpdate, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 import { slugify } from 'src/common/utils/slugify.util';
 
@@ -29,11 +29,16 @@ export class Product {
   gender: string;
 
   @BeforeInsert()
-  validateSlug() {
+  validateSlugInsert() {
     if (!this.slug) {
       this.slug = this.title;
     }
 
+    this.slug = slugify(this.slug);
+  }
+
+  @BeforeUpdate()
+  validateSlugUpdate() {
     this.slug = slugify(this.slug);
   }
 }
