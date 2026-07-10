@@ -19,6 +19,7 @@ export class ProductService {
   private readonly logger = new Logger('ProductService', { timestamp: true });
 
   constructor(
+    private readonly dataSource: DataSource,
     @InjectRepository(Product) private readonly productRepository: Repository<Product>,
     @InjectRepository(ProductImage) private readonly productImageRepository: Repository<ProductImage>,
   ) {}
@@ -46,9 +47,10 @@ export class ProductService {
     const products = await this.productRepository.find({
       take: limit,
       skip: offset,
-      relations: {
-        images: true,
-      },
+      // ? This is not necessary since the entity already has `eager: true` on the relation
+      // relations: {
+      //   images: true,
+      // },
     });
 
     return products.map(this.flattenProduct);
@@ -75,20 +77,40 @@ export class ProductService {
   }
 
   async update(id: string, updateProductDto: UpdateProductDto) {
-    try {
-      const updatedProduct = await this.productRepository.preload({
-        id,
-        ...updateProductDto,
-      });
+    const { images, ...productRest } = updateProductDto;
 
-      if (!updatedProduct) {
-        throw new NotFoundException(`Product with id '${id}' not found.`);
+    const updatedProduct = await this.productRepository.preload({
+      id,
+      ...productRest,
+    });
+
+    if (!updatedProduct) {
+      throw new NotFoundException(`Product with id '${id}' not found.`);
+    }
+
+    // Query runner - Transaction
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      if (images) {
+        await queryRunner.manager.delete(ProductImage, { product: { id } });
+        updatedProduct.images = images.map((url) => this.productImageRepository.create({ url }));
+      } else {
+        updatedProduct.images = await this.productImageRepository.findBy({ product: { id } });
       }
 
-      await this.productRepository.save(updatedProduct);
+      await queryRunner.manager.save(updatedProduct);
 
-      return updatedProduct;
+      await queryRunner.commitTransaction();
+      await queryRunner.release();
+
+      return this.flattenProduct(updatedProduct);
     } catch (error) {
+      await queryRunner.rollbackTransaction();
+      await queryRunner.release();
+
       this.handleTypeormError(error);
     }
   }
