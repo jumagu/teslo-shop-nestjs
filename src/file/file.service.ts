@@ -2,11 +2,14 @@ import { join } from 'path';
 import { writeFile } from 'fs/promises';
 import { existsSync, mkdirSync } from 'fs';
 
+import { ConfigService } from '@nestjs/config';
 import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
 
 @Injectable()
 export class FileService {
   private readonly productsFolder = join(process.cwd(), 'uploads', 'products');
+
+  constructor(private readonly configService: ConfigService) {}
 
   async uploadProductFile(file: Express.Multer.File) {
     this.ensureFolderExists(this.productsFolder);
@@ -20,7 +23,7 @@ export class FileService {
     }
 
     return {
-      fileName: file.filename,
+      secureUrl: `${this.configService.get('API_HOST')}/files/product/${file.filename}`,
     };
   }
 
