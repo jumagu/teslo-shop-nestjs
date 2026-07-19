@@ -1,16 +1,10 @@
-import {
-  Logger,
-  Injectable,
-  HttpException,
-  NotFoundException,
-  BadRequestException,
-  InternalServerErrorException,
-} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Logger, Injectable, NotFoundException } from '@nestjs/common';
 
 import { isUUID } from 'class-validator';
 import { DataSource, Repository } from 'typeorm';
 
+import { handleTypeormError } from 'src/common/helpers';
 import { Product, ProductImage } from './entities';
 import { CreateProductDto, FindAllProductsDto, UpdateProductDto } from './dto';
 
@@ -37,7 +31,7 @@ export class ProductService {
 
       return { ...product, images };
     } catch (error) {
-      this.handleTypeormError(error);
+      handleTypeormError(error, this.logger);
     }
   }
 
@@ -111,7 +105,7 @@ export class ProductService {
       await queryRunner.rollbackTransaction();
       await queryRunner.release();
 
-      this.handleTypeormError(error);
+      handleTypeormError(error, this.logger);
     }
   }
 
@@ -128,7 +122,7 @@ export class ProductService {
         message: 'Product successfully deleted.',
       };
     } catch (error) {
-      this.handleTypeormError(error);
+      handleTypeormError(error, this.logger);
     }
   }
 
@@ -137,17 +131,5 @@ export class ProductService {
       ...product,
       images: product.images.map((img) => img.url),
     };
-  }
-
-  private handleTypeormError(error: any): never {
-    // ? Duplicate key error
-    if (error.code === '23505') {
-      throw new BadRequestException(error.detail);
-    }
-
-    if (error instanceof HttpException) throw error;
-
-    this.logger.error(error);
-    throw new InternalServerErrorException('Operation could not be completed. Please contact the administrator.');
   }
 }
