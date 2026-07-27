@@ -1,3 +1,4 @@
+import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Logger, Injectable, UnauthorizedException } from '@nestjs/common';
 
@@ -5,6 +6,7 @@ import * as bcrypt from 'bcrypt';
 import { Repository } from 'typeorm';
 
 import { User } from './entities/user.entity';
+import { JwtPayload } from './interfaces';
 import { CreateUserDto, SignInUserDto } from './dto';
 
 import { handleTypeormError } from 'src/common/helpers';
@@ -13,7 +15,10 @@ import { handleTypeormError } from 'src/common/helpers';
 export class AuthService {
   private readonly logger = new Logger('AuthService', { timestamp: true });
 
-  constructor(@InjectRepository(User) private readonly userRepository: Repository<User>) {}
+  constructor(
+    private readonly jwtService: JwtService,
+    @InjectRepository(User) private readonly userRepository: Repository<User>,
+  ) {}
 
   async createUser(createUserDto: CreateUserDto) {
     try {
@@ -26,7 +31,10 @@ export class AuthService {
 
       await this.userRepository.save(user);
 
-      return user;
+      return {
+        ...user,
+        accessToken: this.getJwtToken({ id: user.id }),
+      };
     } catch (error) {
       handleTypeormError(error, this.logger);
     }
@@ -36,10 +44,11 @@ export class AuthService {
     try {
       const { password, email } = signInUserDto;
 
-      const user = await this.userRepository.findOne({
-        where: { email },
-        select: { email: true, password: true },
-      });
+      const user = await this.userRepository
+        .createQueryBuilder('user')
+        .addSelect('user.password')
+        .where('user.email = :email', { email: email.toLowerCase() })
+        .getOne();
 
       if (!user) {
         throw new UnauthorizedException('Invalid credentials');
@@ -49,11 +58,20 @@ export class AuthService {
         throw new UnauthorizedException('Invalid credentials');
       }
 
+      const { password: _, ...restUser } = user;
+
       return {
-        accessToken: 'XYZ-123',
+        ...restUser,
+        accessToken: this.getJwtToken({ id: restUser.id }),
       };
     } catch (error) {
       handleTypeormError(error, this.logger);
     }
+  }
+
+  private getJwtToken(payload: JwtPayload) {
+    const token = this.jwtService.sign(payload);
+
+    return token;
   }
 }
