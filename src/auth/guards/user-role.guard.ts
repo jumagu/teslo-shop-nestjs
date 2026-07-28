@@ -28,7 +28,7 @@ export class UserRoleGuard implements CanActivate {
     }
 
     throw new ForbiddenException(
-      `User ${user.fullName} does not have the necessary permissions to perform this action. Current roles: ${user.roles.join(', ')}. Please contact an administrator.`,
+      `User ${user.fullName} does not have the necessary permissions to perform this action. Current roles: ${user.roles.join(', ')}. Please contact tech support.`,
     );
   }
 }
