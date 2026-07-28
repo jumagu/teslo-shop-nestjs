@@ -3,11 +3,15 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, Query
 import { ProductService } from './product.service';
 import { CreateProductDto, FindAllProductsDto, UpdateProductDto } from './dto';
 
+import { Auth } from 'src/auth/decorators';
+import { UserRole } from 'src/auth/enums';
+
 @Controller('products')
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
   @Post()
+  @Auth(UserRole.admin)
   create(@Body() createProductDto: CreateProductDto) {
     return this.productService.create(createProductDto);
   }
@@ -23,11 +27,13 @@ export class ProductController {
   }
 
   @Patch(':id')
+  @Auth(UserRole.admin)
   update(@Param('id', ParseUUIDPipe) id: string, @Body() updateProductDto: UpdateProductDto) {
     return this.productService.update(id, updateProductDto);
   }
 
   @Delete(':id')
+  @Auth(UserRole.admin)
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.productService.remove(id);
   }
