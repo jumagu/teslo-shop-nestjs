@@ -1,3 +1,5 @@
+import type { SeedUser } from './users.data';
+
 type ValidSizes = 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL' | 'XXXL';
 
 interface SeedProduct {
@@ -10,6 +12,7 @@ interface SeedProduct {
   gender: 'men' | 'women' | 'kids' | 'unisex';
   tags: string[];
   images: { url: string }[];
+  user?: SeedUser;
 }
 
 export const SEED_PRODUCTS: SeedProduct[] = [

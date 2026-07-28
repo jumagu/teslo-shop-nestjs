@@ -1,31 +1,55 @@
-import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { BadRequestException, Injectable } from '@nestjs/common';
 
-import { Repository } from 'typeorm';
+import type { Repository } from 'typeorm';
 
+import { SEED_USERS, SEED_PRODUCTS } from './data';
+
+import { User } from 'src/auth/entities';
 import { Product } from 'src/product/entities';
-import { SEED_PRODUCTS } from './data/products.data';
 
 @Injectable()
 export class SeedService {
-  constructor(@InjectRepository(Product) private readonly productRepository: Repository<Product>) {}
+  constructor(
+    @InjectRepository(User) private readonly userRepository: Repository<User>,
+    @InjectRepository(Product) private readonly productRepository: Repository<Product>,
+  ) {}
 
   async execute() {
-    await this.insertProducts();
-    return 'SEED EXECUTED';
+    try {
+      // Delete all products and users first
+      await this.productRepository.deleteAll();
+      await this.userRepository.deleteAll();
+
+      const user = await this.insertUsers();
+
+      await this.insertProducts(user);
+
+      return 'SEED EXECUTED';
+    } catch (e) {
+      throw new BadRequestException('Something went wrong. Please try again.');
+    }
   }
 
-  private async insertProducts() {
-    try {
-      // Delete all products first
-      await this.productRepository.deleteAll();
+  private async insertUsers() {
+    const seedUsers = structuredClone(SEED_USERS);
 
-      // Insert all products
-      await this.productRepository.save(SEED_PRODUCTS);
+    // Insert all users
+    const users = await this.userRepository.save(seedUsers);
 
-      return true;
-    } catch (error) {
-      return false;
-    }
+    return users[0];
+  }
+
+  private async insertProducts(user: User) {
+    const seedProducts = structuredClone(SEED_PRODUCTS);
+
+    // Set products user
+    const products = seedProducts.map((product) => {
+      product.user = user;
+      return product;
+    });
+
+    // Insert all products
+    await this.productRepository.save(products);
   }
 }
