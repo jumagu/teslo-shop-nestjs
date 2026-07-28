@@ -3,7 +3,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, Query
 import { ProductService } from './product.service';
 import { CreateProductDto, FindAllProductsDto, UpdateProductDto } from './dto';
 
-import { User } from 'src/auth/entities/user.entity';
+import { User } from 'src/auth/entities';
 import { UserRole } from 'src/auth/enums';
 import { Auth, GetUser } from 'src/auth/decorators';
 

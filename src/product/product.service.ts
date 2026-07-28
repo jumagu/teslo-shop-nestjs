@@ -4,11 +4,11 @@ import { Logger, Injectable, NotFoundException } from '@nestjs/common';
 import { isUUID } from 'class-validator';
 import { DataSource, Repository } from 'typeorm';
 
-import { handleTypeormError } from 'src/common/helpers';
 import { Product, ProductImage } from './entities';
 import { CreateProductDto, FindAllProductsDto, UpdateProductDto } from './dto';
 
-import { User } from 'src/auth/entities/user.entity';
+import { User } from 'src/auth/entities';
+import { handleTypeormError } from 'src/common/helpers';
 
 @Injectable()
 export class ProductService {

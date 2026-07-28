@@ -5,7 +5,7 @@ import { Logger, Injectable, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { Repository } from 'typeorm';
 
-import { User } from './entities/user.entity';
+import { User } from './entities';
 import { JwtPayload } from './interfaces';
 import { CreateUserDto, SignInUserDto } from './dto';
 

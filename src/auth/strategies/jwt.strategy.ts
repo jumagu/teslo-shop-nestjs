@@ -6,7 +6,7 @@ import { Injectable, ForbiddenException, UnauthorizedException } from '@nestjs/c
 import { Repository } from 'typeorm';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 
-import { User } from '../entities/user.entity';
+import { User } from '../entities';
 import type { JwtPayload } from '../interfaces';
 
 @Injectable()

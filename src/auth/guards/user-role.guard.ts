@@ -4,7 +4,7 @@ import { BadRequestException, CanActivate, ExecutionContext, ForbiddenException,
 import { Observable } from 'rxjs';
 
 import { META_ROLES } from '../decorators';
-import type { User } from '../entities/user.entity';
+import type { User } from '../entities';
 
 @Injectable()
 export class UserRoleGuard implements CanActivate {

@@ -2,8 +2,8 @@ import { BeforeInsert, BeforeUpdate, Column, Entity, ManyToOne, OneToMany, Prima
 
 import { ProductImage } from './product-image.entity';
 
-import { User } from 'src/auth/entities/user.entity';
-import { slugify } from 'src/common/utils/slugify.util';
+import { User } from 'src/auth/entities';
+import { slugify } from 'src/common/utils';
 
 @Entity()
 export class Product {

@@ -1,6 +1,6 @@
 import { createParamDecorator, InternalServerErrorException } from '@nestjs/common';
 
-import type { User } from '../entities/user.entity';
+import type { User } from '../entities';
 
 type UserProps = keyof Omit<User, 'validateEmail' | 'password'>;
 
