@@ -8,6 +8,8 @@ import { handleTypeormError } from 'src/common/helpers';
 import { Product, ProductImage } from './entities';
 import { CreateProductDto, FindAllProductsDto, UpdateProductDto } from './dto';
 
+import { User } from 'src/auth/entities/user.entity';
+
 @Injectable()
 export class ProductService {
   private readonly logger = new Logger('ProductService', { timestamp: true });
@@ -18,13 +20,14 @@ export class ProductService {
     @InjectRepository(ProductImage) private readonly productImageRepository: Repository<ProductImage>,
   ) {}
 
-  async create(createProductDto: CreateProductDto) {
+  async create(createProductDto: CreateProductDto, user: User) {
     try {
       const { images = [], ...rest } = createProductDto;
 
       const product = this.productRepository.create({
         ...rest,
         images: images.map((url) => this.productImageRepository.create({ url })),
+        user,
       });
 
       await this.productRepository.save(product);
@@ -94,6 +97,8 @@ export class ProductService {
       } else {
         updatedProduct.images = await this.productImageRepository.findBy({ product: { id } });
       }
+
+      // updatedProduct.user = user; // ? (Optional)
 
       await queryRunner.manager.save(updatedProduct);
 

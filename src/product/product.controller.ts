@@ -3,8 +3,9 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, Query
 import { ProductService } from './product.service';
 import { CreateProductDto, FindAllProductsDto, UpdateProductDto } from './dto';
 
-import { Auth } from 'src/auth/decorators';
+import { User } from 'src/auth/entities/user.entity';
 import { UserRole } from 'src/auth/enums';
+import { Auth, GetUser } from 'src/auth/decorators';
 
 @Controller('products')
 export class ProductController {
@@ -12,8 +13,8 @@ export class ProductController {
 
   @Post()
   @Auth(UserRole.admin)
-  create(@Body() createProductDto: CreateProductDto) {
-    return this.productService.create(createProductDto);
+  create(@Body() createProductDto: CreateProductDto, @GetUser() user: User) {
+    return this.productService.create(createProductDto, user);
   }
 
   @Get()
