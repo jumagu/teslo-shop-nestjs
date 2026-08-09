@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { FileModule } from './file/file.module';
 import { CommonModule } from './common/common.module';
 import { ProductModule } from './product/product.module';
+import { MessagingModule } from './messaging/messaging.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { ProductModule } from './product/product.module';
     AuthModule,
     FileModule,
     SeedModule,
+    MessagingModule,
   ],
   controllers: [],
   providers: [],
