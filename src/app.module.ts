@@ -21,6 +21,7 @@ import { MessagingModule } from './messaging/messaging.module';
       password: process.env.DB_PASSWORD,
       autoLoadEntities: true,
       synchronize: true,
+      ssl: process.env.STAGE === 'prod',
     }),
     CommonModule,
     ProductModule,
