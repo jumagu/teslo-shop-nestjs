@@ -1,17 +1,17 @@
+import { createReadStream } from 'fs';
+
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
   Get,
   Post,
   Param,
   Controller,
-  StreamableFile,
   UploadedFile,
   ParseFilePipe,
+  StreamableFile,
   UseInterceptors,
   FileTypeValidator,
 } from '@nestjs/common';
-
-import { createReadStream } from 'fs';
 
 import { memoryStorage } from 'multer';
 
