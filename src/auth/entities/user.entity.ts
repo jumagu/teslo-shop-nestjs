@@ -23,7 +23,7 @@ export class User {
   roles: string[];
 
   @OneToMany(() => Product, (product) => product.user)
-  product: Product;
+  products: Product[];
 
   @BeforeInsert()
   @BeforeUpdate()

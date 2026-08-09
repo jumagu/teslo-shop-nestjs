@@ -37,7 +37,7 @@ export class Product {
   @OneToMany(() => ProductImage, (productImage) => productImage.product, { cascade: true, eager: true })
   images: ProductImage[];
 
-  @ManyToOne(() => User, (user) => user.product, { eager: true })
+  @ManyToOne(() => User, (user) => user.products, { eager: true })
   user: User;
 
   @BeforeInsert()
